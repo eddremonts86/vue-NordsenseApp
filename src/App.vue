@@ -1,31 +1,6 @@
 <template>
     <v-app id="inspire">
-        <v-navigation-drawer
-                app
-                clipped
-                v-model="drawer"
-        >
-            <v-list dense>
-                <v-list-item @click="">
-                    <v-list-item-action>
-                        <v-icon>dashboard</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-content>
-                        <v-list-item-title>Dashboard</v-list-item-title>
-                    </v-list-item-content>
-                </v-list-item>
-                <v-list-item @click="">
-                    <v-list-item-action>
-                        <v-icon>settings</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-content>
-                        <v-list-item-title>Settings</v-list-item-title>
-                    </v-list-item-content>
-                </v-list-item>
-            </v-list>
-        </v-navigation-drawer>
-
-        <v-app-bar
+          <v-app-bar
                 app
                 clipped-left
         >
@@ -34,45 +9,8 @@
         </v-app-bar>
 
         <v-content>
-            <v-container
-                    class="fill-height"
-                    fluid
-            >
-                <v-row
-                        align="center"
-                        justify="center"
-                >
-                    <v-col class="shrink">
-                        <v-tooltip right>
-                            <template v-slot:activator="{ on }">
-                                <v-btn
-                                        :href="source"
-                                        icon
-                                        large
-                                        target="_blank"
-                                        v-on="on"
-                                >
-                                    <v-icon large>mdi-code-tags</v-icon>
-                                </v-btn>
-                            </template>
-                            <span>Source</span>
-                        </v-tooltip>
-                        <v-tooltip right>
-                            <template v-slot:activator="{ on }">
-                                <v-btn
-                                        href="https://codepen.io/johnjleider/pen/bXNzZL"
-                                        icon
-                                        large
-                                        target="_blank"
-                                        v-on="on"
-                                >
-                                    <v-icon large>mdi-codepen</v-icon>
-                                </v-btn>
-                            </template>
-                            <span>Codepen</span>
-                        </v-tooltip>
-                    </v-col>
-                </v-row>
+            <v-container fluid>
+                 <router-view></router-view>
             </v-container>
         </v-content>
 
