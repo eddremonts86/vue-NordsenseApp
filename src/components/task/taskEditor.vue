@@ -1,11 +1,5 @@
 <template>
-    <v-dialog max-width="60%" v-model="dialog">
-        <template v-slot:activator="{ on }">
-            <v-btn class="mb-2" color="primary" dark fab slot="activator" v-on="on">
-                <v-icon dark> add</v-icon>
-            </v-btn>
-
-        </template>
+    <v-dialog max-width="60%" v-model="parameters['dialog']">
         <v-card>
             <v-card-title class="primary">
                 <span class="headline">Create a new Task</span>
@@ -47,7 +41,7 @@
                                                 <v-icon>add</v-icon>
                                             </v-btn>
                                         </v-flex>
-                                        <v-flex class="xs12 px-4" v-show="guests.length > 0">
+                                        <v-flex class="xs12 px-4" v-show="guests && guests.length > 0">
                                             <div :key="key" class="guest" v-for="(guest , key) in guests">
                                                 {{guest}}
                                             </div>
@@ -57,10 +51,10 @@
                             </v-layout>
                         </v-flex>
                     </v-layout>
-
                 </v-container>
             </v-card-text>
             <v-card-actions class="grey darken-4">
+                <v-btn @click="save(false)" class="primary" text>Create and closeWindow</v-btn>
                 <v-spacer></v-spacer>
                 <v-btn @click="close" class="error" text>Cancel</v-btn>
                 <v-btn @click="save(true)" class="primary" text>Save</v-btn>
@@ -73,25 +67,56 @@
     import {mapGetters} from 'vuex'
 
     export default {
-        name: "taskCreator",
+        name: "taskEditor",
         data() {
             return {
-                dialog: false,
                 taskItems: [],
                 guests: [],
                 emailRules: [
                     v => !!v || 'E-mail is required',
                     v => /.+@.+/.test(v) || 'E-mail must be valid',
                 ],
+                taskObject: {}
             }
         },
+        props: ['parameters'],
         methods: {
+            init() {
+                let vue = this;
+                if (vue.parameters['dialog']) {
+                    vue.$store.dispatch("fetchTasksByID", vue.parameters['generalID']).then((response) => {
+                        this.taskObject = response.data;
+                        if (vue.parameters['type'] == 'general') {
+                            vue.taskItems.name = response.data.name;
+                            vue.taskItems.desc = response.data.desc;
+                            vue.taskItems.place = response.data.place;
+                            vue.taskItems.parents = response.data.parent;
+                            vue.taskItems.enabled = response.data.enabled;
+                            vue.taskItems.startTask = response.data.startTask;
+                            vue.taskItems.endTask = response.data.endTask;
+                            vue.taskItems.status = response.data.status;
+                            vue.guests = response.data.guests
+                        } else {
+                            let subTask = (response.data.subTasks).filter(id => id === vue.parameters['subTaskID']);
+                            console.log(subTask)
+                            vue.taskItems.name = subTask.name;
+                            vue.taskItems.desc = subTask.desc;
+                            vue.taskItems.place = subTask.place;
+                            vue.taskItems.parents = subTask.parent;
+                            vue.taskItems.enabled = subTask.enabled;
+                            vue.taskItems.startTask = subTask.startTask;
+                            vue.taskItems.endTask = subTask.endTask;
+                            vue.guests = subTask.guests
+                        }
+                    })
+                }
+            },
             close(closeWindow) {
                 setTimeout(() => {
                     this.taskItems = Object.assign({}, {});
-                    this.guests = []
+                    this.guests = [];
                     if (closeWindow)
-                        this.dialog = false;
+                        this.parameters['dialog'] = false;
                 }, 300)
             },
             save(closeWindow) {
@@ -109,25 +134,18 @@
                     "parent": this.taskItems.parents,
                     "enabled": true
                 };
-                if (this.taskItems.parents) {
-                    this.$store.dispatch("fetchTasksByID", this.taskItems.parents).then((response) => {
-                        let task = response.data;
-                        task.subTasks.push(newTask);
-                        vue.$store.dispatch("putTasks", task).catch((error) => {
-                        }).finally(() => {
-                            vue.$store.dispatch("fetchTasks");
-                            vue.close(closeWindow)
-                        })
-                    })
 
-                } else {
-                    newTask['subTasks'] = []
-                    this.$store.dispatch("postTasks", newTask).catch((error) => {
+                this.$store.dispatch("fetchTasksByID", this.parameters['generalID']).then((response) => {
+                    let task = response.data;
+                    task.subTasks.push(newTask);
+                    vue.$store.dispatch("putTasks", task).catch((error) => {
                     }).finally(() => {
                         vue.$store.dispatch("fetchTasks");
                         vue.close(closeWindow)
                     })
-                }
+                });
+
+
                 return true;
             },
         },
@@ -136,6 +154,9 @@
                 'getTask'
             ])
         },
+        created() {
+            this.init()
+        }
     }
 </script>
 
