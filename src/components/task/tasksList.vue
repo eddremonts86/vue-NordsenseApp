@@ -2,51 +2,119 @@
     <v-layout>
         <v-flex>
             <v-card>
-                <v-card-title class="primary">Task Manager
+                <v-card-title class="primary">
                     <v-spacer></v-spacer>
-                    <v-dialog max-width="500px" v-model="dialog">
-                        <template v-slot:activator="{ on }">
-                            <v-btn class="mb-2" color="primary" dark v-on="on">New Task</v-btn>
-                        </template>
-                        <v-card>
-                            <v-card-title>
-                                <span class="headline">Create a new Task</span>
-                            </v-card-title>
-                            <v-card-text>
-                                <v-container grid-list-md>
-                                    <v-layout wrap>
-                                        <v-flex xs12>
-                                            <v-text-field label="Task name" v-model="taskItems['name']"></v-text-field>
-                                        </v-flex>
-                                        <v-flex xs12>
-                                            <v-textarea label="Task Description"
-                                                        v-model="taskItems['desc']"></v-textarea>
-                                        </v-flex>
-                                    </v-layout>
-                                </v-container>
-                            </v-card-text>
-
-                            <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <v-btn @click="close" color="blue darken-1" text>Cancel</v-btn>
-                                <v-btn @click="save" color="blue darken-1" text>Save</v-btn>
-                            </v-card-actions>
-                        </v-card>
-                    </v-dialog>
-
-
+                    <taskCreator/>
                 </v-card-title>
 
                 <v-card-text class="pa-5">
                     <v-data-table
                             :headers="headers"
-                            :items="desserts"
+                            :items="tasksArary"
                             class="elevation-1"
                             item-key="id"
                             show-select
                             v-model="selected"
                     >
-                        <template v-slot:top>
+                        <template v-slot:body="{items}">
+
+                            <tbody :key="item.id" v-for="item in items">
+                            <tr :class="item.status">
+                                <td>
+                                    <v-checkbox></v-checkbox>
+                                </td>
+                                <td class="py-3">
+                                    <div class="body-1">{{item.name}}</div>
+                                    <div class="caption pl-1">{{item.desc}}</div>
+                                </td>
+                                <td>
+                                    <span v-if="item.startTask !== ''">{{item.startTask}}</span>
+                                    <span v-else><v-btn icon slot="activator"
+                                                        text><v-icon>play_circle_filled</v-icon></v-btn></span>
+                                </td>
+                                <td>
+                                    <div v-if="item.startTask !== ''">
+                                        <span v-if="item.endTask !== ''">{{item.endTask}}</span>
+                                        <span v-else><v-btn icon slot="activator"
+                                                            text><v-icon>stop</v-icon></v-btn></span>
+                                    </div>
+                                </td>
+                                <td>{{item.fullTime}}</td>
+                                <td>
+                                    <v-btn
+                                            icon
+                                            slot="activator" text
+                                    >
+                                        <v-icon>
+                                            add
+                                        </v-icon>
+                                    </v-btn>
+                                    <v-btn
+
+                                            icon
+                                            slot="activator" text
+                                    >
+                                        <v-icon>
+                                            edit
+                                        </v-icon>
+                                    </v-btn>
+                                    <v-btn
+
+                                            icon
+                                            slot="activator" text
+                                    >
+                                        <v-icon>
+                                            delete
+                                        </v-icon>
+                                    </v-btn>
+
+
+                                </td>
+                            </tr>
+                            <tr :class="sub.status" :key="key" v-for="(sub, key) in item.subTasks"
+                                v-if="(item.subTasks).length > 0">
+                                <td></td>
+                                <td class="pl-7 py-3">
+                                    <div class="body-1">
+                                        <v-icon>subdirectory_arrow_right</v-icon>
+                                        {{sub.name}}
+                                    </div>
+                                    <div class="caption pl-7">{{sub.desc}}</div>
+                                </td>
+                                <td>
+                                    <span v-if="sub.startTask !== ''">{{sub.startTask}}</span>
+                                    <span v-else><v-btn icon slot="activator"
+                                                        text><v-icon>play_circle_filled</v-icon></v-btn></span>
+                                </td>
+                                <td>
+                                    <div v-if="sub.startTask !== ''">
+                                        <span v-if="sub.endTask !== ''">{{sub.endTask}}</span>
+                                        <span v-else><v-btn icon slot="activator"
+                                                            text><v-icon>stop</v-icon></v-btn></span>
+                                    </div>
+                                </td>
+                                <td>{{sub.fullTime}}</td>
+                                <td class="text-xl-right">
+                                    <v-btn
+                                            icon
+                                            slot="activator" text
+                                    >
+                                        <v-icon flat>
+                                            edit
+                                        </v-icon>
+                                    </v-btn>
+                                    <v-btn
+                                            icon
+                                            slot="activator" text
+                                    >
+                                        <v-icon>
+                                            delete
+                                        </v-icon>
+                                    </v-btn>
+                                </td>
+                            </tr>
+                            </tbody>
+
                         </template>
                     </v-data-table>
 
@@ -58,8 +126,11 @@
 </template>
 
 <script>
+    import taskCreator from "./taskCreator";
+
     export default {
         name: "taskManager",
+        components: {taskCreator},
         data() {
             return {
                 selected: [],
@@ -70,32 +141,212 @@
                         sortable: false,
                         value: 'name',
                     },
+                    {
+                        text: 'Start Task',
+                        align: 'left',
+                        sortable: false,
+                        value: 'startTask',
+                    },
+                    {
+                        text: 'End Task',
+                        align: 'left',
+                        sortable: false,
+                        value: 'endTask',
+                    },
+                    {
+                        text: 'Full Time',
+                        align: 'left',
+                        sortable: false,
+                        value: 'fullTime',
+                    },
+                    {
+                        text: 'Actions',
+                        align: 'left',
+                        sortable: false,
+                    },
                 ],
-                desserts: [
+                tasksArary: [
                     {
                         name: 'Primera Task',
-                        desc: 'Primera Task',
+                        desc: 'The URL in your application where users will be sent after authorization. See details below about redirect urls.',
+                        startTask: '10-01-2017',
+                        endTask: '',
+                        fullTime: '25 days',
+                        status: 'done',
+                        place:'',
+                        guests:[],
+                        parent:'',
+                        subTasks: [
+                            {
+                                name: 'Sub - Segunda Task',
+                                desc: 'The URL in your application where users will be sent after authorization. See details below about redirect urls.',
+                                id: '1',
+                                startTask: '1-01-2017',
+                                endTask: '',
+                                fullTime: '2 days',
+                                status: 'done',
+                                place:'',
+                                guests:[],
+                                parent:'',
+                            }, {
+                                name: 'Sub - Tercera Task',
+                                desc: 'The URL in your application where users will be sent after authorization. See details below about redirect urls.',
+                                id: '2',
+                                startTask: '',
+                                endTask: '',
+                                fullTime: '15 days',
+                                status: 'done',
+                                place:'',
+                                guests:[],
+                                parent:'',
+                            }
+                        ],
                         id: '0',
-                    }, {
-                        name: 'Segunda Task',
-                        desc: 'Segunda Task',
+                    },
+                    {
+                        name: 'Primera Task',
+                        desc: 'The URL in your application where users will be sent after authorization. See details below about redirect urls.',
+                        startTask: '10-01-2017',
+                        endTask: '05-02-2017',
+                        fullTime: '25 days',
+                        status: 'open',
+                        place:'',
+                        guests:[],
+                        parent:'',
+                        subTasks: [
+                            {
+                                name: 'Sub - Segunda Task',
+                                desc: 'The URL in your application where users will be sent after authorization. See details below about redirect urls.',
+                                id: '1',
+                                startTask: '1-01-2017',
+                                endTask: '05-05-2017',
+                                fullTime: '2 days',
+                                status: 'done',
+                                place:'',
+                                guests:[],
+                                parent:'',
+                            }, {
+                                name: 'Sub - Tercera Task',
+                                desc: 'The URL in your application where users will be sent after authorization. See details below about redirect urls.',
+                                id: '2',
+                                startTask: '15-01-2017',
+                                endTask: '25-02-2017',
+                                fullTime: '15 days',
+                                status: 'open',
+                                place:'',
+                                guests:[],
+                                parent:'',
+                            }
+                        ],
                         id: '1',
-                    }, {
-                        name: 'Tercera Task',
-                        desc: 'Tercera Task',
+                    },
+                    {
+                        name: 'Primera Task',
+                        desc: 'The URL in your application where users will be sent after authorization. See details below about redirect urls.',
+                        startTask: '10-01-2017',
+                        endTask: '05-02-2017',
+                        fullTime: '25 days',
+                        status: 'canceled',
+                        place:'',
+                        guests:[],
+                        parent:'',
+                        subTasks: [
+                            {
+                                name: 'Sub - Segunda Task',
+                                desc: 'The URL in your application where users will be sent after authorization. See details below about redirect urls.',
+                                id: '1',
+                                startTask: '1-01-2017',
+                                endTask: '05-05-2017',
+                                fullTime: '2 days',
+                                status: 'canceled',
+                                place:'',
+                                guests:[],
+                                parent:'',
+                            }, {
+                                name: 'Sub - Tercera Task',
+                                desc: 'The URL in your application where users will be sent after authorization. See details below about redirect urls.',
+                                id: '2',
+                                startTask: '15-01-2017',
+                                endTask: '25-02-2017',
+                                fullTime: '15 days',
+                                status: 'canceled',
+                                place:'',
+                                guests:[],
+                                parent:'',
+                            }
+                        ],
                         id: '2',
-                    }, {
-                        name: 'Cuarta Task',
-                        desc: 'Cuarta Task',
-                        id: '3',
-                    }, {
-                        name: 'Quinta Task',
-                        desc: 'Quinta Task',
-                        id: '4',
-                    }, {
-                        name: 'Sexta Task',
-                        desc: 'Sexta Task',
-                        id: '5',
+                    },
+                    {
+                        name: 'Primera Task',
+                        desc: 'The URL in your application where users will be sent after authorization. See details below about redirect urls.',
+                        startTask: '10-01-2017',
+                        endTask: '05-02-2017',
+                        fullTime: '25 days',
+                        status: 'canceled',
+                        subTasks: [
+                            {
+                                name: 'Sub - Segunda Task',
+                                desc: 'The URL in your application where users will be sent after authorization. See details below about redirect urls.',
+                                id: '1',
+                                startTask: '1-01-2017',
+                                endTask: '05-05-2017',
+                                fullTime: '2 days',
+                                status: 'canceled',
+                                place:'',
+                                guests:[],
+                                parent:'',
+                            }, {
+                                name: 'Sub - Tercera Task',
+                                desc: 'The URL in your application where users will be sent after authorization. See details below about redirect urls.',
+                                id: '2',
+                                startTask: '15-01-2017',
+                                endTask: '25-02-2017',
+                                fullTime: '15 days',
+                                status: 'canceled',
+                                place:'',
+                                guests:[],
+                                parent:'',
+                            }
+                        ],
+                        id: '2',
+                        place:'',
+                        guests:[],
+                        parent:'',
+                    },
+                    {
+                        name: 'Primera Task',
+                        desc: 'The URL in your application where users will be sent after authorization. See details below about redirect urls.',
+                        startTask: '',
+                        endTask: '',
+                        fullTime: '',
+                        status: '',
+                        subTasks: [
+                            {
+                                name: 'Sub - Segunda Task',
+                                desc: 'The URL in your application where users will be sent after authorization. See details below about redirect urls.',
+                                id: '1',
+                                startTask: '',
+                                endTask: '',
+                                fullTime: '',
+                                status: '',
+                                place:'',
+                                guests:[],
+                                parent:'',
+                            }, {
+                                name: 'Sub - Tercera Task',
+                                desc: 'The URL in your application where users will be sent after authorization. See details below about redirect urls.',
+                                id: '2',
+                                startTask: '',
+                                endTask: '',
+                                fullTime: '',
+                                place:'',
+                                guests:[],
+                                parent:'',
+                                status: ' ',
+                            }
+                        ],
+                        id: '2',
                     }
                 ],
                 taskItems: [],
@@ -110,16 +361,15 @@
                 setTimeout(() => {
                     this.taskItems = Object.assign({}, {});
                     this.editedIndex = -1;
-                    console.log(this.desserts)
                 }, 500)
             },
 
             save() {
-                this.taskItems['id'] = this.desserts.length;
+                this.taskItems['id'] = this.tasksArary.length;
                 if (this.editedIndex > -1) {
-                    Object.assign(this.desserts[this.taskItems], this.taskItems)
+                    Object.assign(this.tasksArary[this.taskItems], this.taskItems)
                 } else {
-                    this.desserts.push(this.taskItems)
+                    this.tasksArary.push(this.taskItems)
                 }
                 this.close()
             },

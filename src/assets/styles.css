@@ -1,0 +1,23 @@
+.done {
+   /* background: rgba(18, 36, 36, 0.82)*/
+}
+
+.canceled {
+    /*
+    background: rgba(17, 0, 5, 0.91)
+    */
+}
+
+.open {
+    /*
+    background: rgba(0, 8, 29, 0.96)
+    */
+}
+
+.guest {
+    font-size: 12px;
+}
+
+.radio5 {
+    border-radius: 5px;
+}
