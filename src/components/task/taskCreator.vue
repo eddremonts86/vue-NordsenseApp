@@ -107,11 +107,12 @@
                     "place": this.taskItems.place,
                     "guests": this.guests,
                     "parent": this.taskItems.parents,
-                    "enabled": true
-                };
+                    "enabled": true,
+                 };
                 if (this.taskItems.parents) {
                     this.$store.dispatch("fetchTasksByID", this.taskItems.parents).then((response) => {
                         let task = response.data;
+                        if(!task["subTasks"]){task["subTasks"] = []}
                         task.subTasks.push(newTask);
                         vue.$store.dispatch("putTasks", task).catch((error) => {
                         }).finally(() => {
@@ -121,7 +122,6 @@
                     })
 
                 } else {
-                    newTask['subTasks'] = []
                     this.$store.dispatch("postTasks", newTask).catch((error) => {
                     }).finally(() => {
                         vue.$store.dispatch("fetchTasks");

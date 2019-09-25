@@ -27,26 +27,18 @@
                                 </td>
                                 <td>
                                     <span v-if="item.startTask !== ''">{{item.startTask}}</span>
-                                    <span v-else><v-btn icon slot="activator"
+                                    <span v-else><v-btn icon slot="activator" @click="start(item.id, null, 'general')"
                                                         text><v-icon>play_circle_filled</v-icon></v-btn></span>
                                 </td>
                                 <td>
                                     <div v-if="item.startTask !== ''">
                                         <span v-if="item.endTask !== ''">{{item.endTask}}</span>
-                                        <span v-else><v-btn icon slot="activator"
+                                        <span v-else><v-btn icon slot="activator" @click="stop(item.id, null, 'general')"
                                                             text><v-icon>stop</v-icon></v-btn></span>
                                     </div>
                                 </td>
                                 <td>{{item.fullTime}}</td>
                                 <td>
-                                    <v-btn
-                                            icon
-                                            slot="activator" text
-                                    >
-                                        <v-icon>
-                                            add
-                                        </v-icon>
-                                    </v-btn>
                                     <v-btn
                                             @click="edit(item.id, null, 'general')"
                                             icon
@@ -81,13 +73,13 @@
                                 </td>
                                 <td>
                                     <span v-if="sub.startTask !== ''">{{sub.startTask}}</span>
-                                    <span v-else><v-btn icon slot="activator"
+                                    <span v-else><v-btn icon slot="activator" @click="start(item.id, sub.id, 'subTask')"
                                                         text><v-icon>play_circle_filled</v-icon></v-btn></span>
                                 </td>
                                 <td>
                                     <div v-if="sub.startTask !== ''">
                                         <span v-if="sub.endTask !== ''">{{sub.endTask}}</span>
-                                        <span v-else><v-btn icon slot="activator"
+                                        <span v-else><v-btn icon slot="activator" @click="stop(item.id, sub.id, 'subTask')"
                                                             text><v-icon>stop</v-icon></v-btn></span>
                                     </div>
                                 </td>
@@ -182,9 +174,67 @@
             init: function () {
                 this.$store.dispatch("fetchTasks");
             },
-            start(task, type) {
+             stop(generalTaskID, subTaskID, type) {
+                let vue = this;
+                if (type == 'general') {
+                    this.$store.dispatch("fetchTasksByID", generalTaskID).then((response) => {
+                        response.data.endTask = new Date();
+                        vue.$store.dispatch("putTasks", response.data)
+                            .catch((error) => {})
+                            .finally(() => {
+                                vue.$store.dispatch("fetchTasks");
+                            })
+                    })
+                }
+                else {
+
+                    this.$store.dispatch("fetchTasksByID", generalTaskID).then((response) => {
+                        let task = response.data;
+                        for (let i in task.subTasks) {
+                            let subTask = task.subTasks[i];
+                            if (subTaskID === subTask.id) {
+                                subTask.endTask  = new Date();
+                                break;
+                            }
+                        }
+                        vue.$store.dispatch("putTasks", task).catch((error) => {
+                        }).finally(() => {
+                            vue.$store.dispatch("fetchTasks");
+                        })
+                    });
+                }
+                return true;
             },
-            stop(task, type) {
+            start(generalTaskID, subTaskID, type) {
+                let vue = this;
+                if (type == 'general') {
+                    this.$store.dispatch("fetchTasksByID", generalTaskID).then((response) => {
+                       response.data.startTask = new Date();
+                       vue.$store.dispatch("putTasks", response.data)
+                            .catch((error) => {})
+                            .finally(() => {
+                                vue.$store.dispatch("fetchTasks");
+                            })
+                    })
+                }
+                else {
+
+                    this.$store.dispatch("fetchTasksByID", generalTaskID).then((response) => {
+                        let task = response.data;
+                        for (let i in task.subTasks) {
+                            let subTask = task.subTasks[i];
+                            if (subTaskID === subTask.id) {
+                                subTask.startTask  = new Date();
+                                break;
+                            }
+                        }
+                        vue.$store.dispatch("putTasks", task).catch((error) => {
+                        }).finally(() => {
+                            vue.$store.dispatch("fetchTasks");
+                         })
+                    });
+                }
+                return true;
             },
             edit(generalTaskID, subtaskID, type) {
                 this.editParameters['dialog'] = true;
@@ -194,8 +244,6 @@
                 this.editWindow ++;
                 return true;
 
-            },
-            addSubTask(task) {
             },
             delete(task, type) {
             },

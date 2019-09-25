@@ -1,38 +1,32 @@
 {
   "tasks": [
     {
-      "name": "sdfdsf",
-      "desc": "dfdsfsd",
-      "id": 0.9945030499315026,
-      "startTask": "",
-      "endTask": "",
+      "name": "  we234234324",
+      "desc": "gf",
+      "startTask": "2019-09-25T08:09:41.072Z",
+      "endTask": "2019-09-25T08:10:18.029Z",
       "fullTime": "",
       "status": "",
-      "place": "dfsdfsdf",
-      "guests": [
-        "dsfds@fknm.com"
-      ],
+      "id": 0.7604631794397618,
+      "place": "gf dfsd fs fggdfgdf 4234234",
+      "guests": [],
       "enabled": true,
       "subTasks": [
         {
-          "name": "sdfdsf ggdfgf edit",
-          "desc": "dfdsfsd gfdg dfgdfgdf fgddfg fdg dfgdfgdfg dfgdf ",
-          "id": 0.10972676634528278,
-          "startTask": "",
-          "endTask": "",
+          "name": "fhg fdggfddfg dfdf dffdgfd",
+          "desc": "fhg",
+          "startTask": "2019-09-25T08:05:05.962Z",
+          "endTask": "2019-09-25T08:10:19.328Z",
           "fullTime": "",
           "status": "",
-          "place": "dfsdfsdf fgfdgdfg",
-          "parents": 0.9945030499315026,
-          "guests": [
-            "dsfds@fknm.com",
-            "fgdfgdfgfdg@jfn.es"
-          ],
+          "id": 0.8169272200464583,
+          "place": "fhg gffdgfdf gffddfg",
+          "guests": [],
+          "parent": 0.7604631794397618,
           "enabled": true
         }
       ]
     }
-
   ],
   "users": [
     {

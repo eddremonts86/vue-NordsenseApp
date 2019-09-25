@@ -97,16 +97,20 @@
                             vue.taskItems.status = response.data.status;
                             vue.guests = response.data.guests
                         } else {
-                            let subTask = (response.data.subTasks).filter(id => id === vue.parameters['subTaskID']);
-                            console.log(subTask)
-                            vue.taskItems.name = subTask.name;
-                            vue.taskItems.desc = subTask.desc;
-                            vue.taskItems.place = subTask.place;
-                            vue.taskItems.parents = subTask.parent;
-                            vue.taskItems.enabled = subTask.enabled;
-                            vue.taskItems.startTask = subTask.startTask;
-                            vue.taskItems.endTask = subTask.endTask;
-                            vue.guests = subTask.guests
+                            for (let i in response.data.subTasks) {
+                                let subTask = response.data.subTasks[i];
+                                if (vue.parameters['subTaskID'] === subTask.id) {
+                                    vue.taskItems.name = subTask.name;
+                                    vue.taskItems.desc = subTask.desc;
+                                    vue.taskItems.place = subTask.place;
+                                    vue.taskItems.parents = subTask.parent;
+                                    vue.taskItems.enabled = subTask.enabled;
+                                    vue.taskItems.startTask = subTask.startTask;
+                                    vue.taskItems.endTask = subTask.endTask;
+                                    vue.guests = subTask.guests;
+                                    break;
+                                }
+                            }
                         }
                     })
                 }
@@ -124,26 +128,49 @@
                 let newTask = {
                     "name": this.taskItems.name,
                     "desc": this.taskItems.desc,
-                    "id": Math.random(),
                     "startTask": "",
                     "endTask": "",
                     "fullTime": "",
                     "status": "",
+                    "id": vue.parameters['generalID'],
                     "place": this.taskItems.place,
                     "guests": this.guests,
                     "parent": this.taskItems.parents,
-                    "enabled": true
+                    "enabled": true,
                 };
-
-                this.$store.dispatch("fetchTasksByID", this.parameters['generalID']).then((response) => {
-                    let task = response.data;
-                    task.subTasks.push(newTask);
-                    vue.$store.dispatch("putTasks", task).catch((error) => {
-                    }).finally(() => {
-                        vue.$store.dispatch("fetchTasks");
-                        vue.close(closeWindow)
+                if (vue.parameters['type'] == 'general') {
+                    this.$store.dispatch("fetchTasksByID", this.parameters['generalID']).then((response) => {
+                        if (response.data.subTasks) {
+                            newTask["subTasks"] = [];
+                            newTask.subTasks = response.data.subTasks
+                        }
+                        vue.$store.dispatch("putTasks", newTask)
+                            .catch((error) => {
+                            })
+                            .finally(() => {
+                                vue.$store.dispatch("fetchTasks");
+                                vue.close(closeWindow)
+                            })
                     })
-                });
+                } else {
+                    newTask.id = vue.parameters['subTaskID'];
+                    this.$store.dispatch("fetchTasksByID", this.parameters['generalID']).then((response) => {
+                        let task = response.data;
+                        for (let i in task.subTasks) {
+                            let subTask = task.subTasks[i];
+                            if (vue.parameters['subTaskID'] === subTask.id) {
+                                task.subTasks.splice(i, 1);
+                                task.subTasks.push(newTask);
+                                break;
+                            }
+                        }
+                        vue.$store.dispatch("putTasks", task).catch((error) => {
+                        }).finally(() => {
+                            vue.$store.dispatch("fetchTasks");
+                            vue.close(closeWindow)
+                        })
+                    });
+                }
 
 
                 return true;
