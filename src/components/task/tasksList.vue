@@ -7,12 +7,21 @@
                     <taskCreator/>
                 </v-card-title>
                 <v-card-text class="pa-5">
+                    <v-text-field
+                            append-icon="search"
+                            hide-details
+                            label="Search"
+                            single-line
+                            v-model="search"
+                    />
                     <v-data-table
                             :headers="headers"
                             :items="getTask"
+                            :search="search"
                             class="elevation-1"
                             item-key="id"
                             show-select
+
                     >
                         <template v-slot:body="{items}">
 
@@ -26,14 +35,15 @@
                                     <div class="caption pl-1">{{item.desc}}</div>
                                 </td>
                                 <td>
-                                    <span v-if="item.startTask !== ''">{{item.startTask}}</span>
-                                    <span v-else><v-btn icon slot="activator" @click="start(item.id, null, 'general')"
+                                    <span v-if="item.startTask !== ''">{{dateFormat(item.startTask)}}</span>
+                                    <span v-else><v-btn @click="start(item.id, null, 'general')" icon slot="activator"
                                                         text><v-icon>play_circle_filled</v-icon></v-btn></span>
                                 </td>
                                 <td>
                                     <div v-if="item.startTask !== ''">
-                                        <span v-if="item.endTask !== ''">{{item.endTask}}</span>
-                                        <span v-else><v-btn icon slot="activator" @click="stop(item.id, null, 'general')"
+                                        <span v-if="item.endTask !== ''">{{dateFormat(item.endTask)}}</span>
+                                        <span v-else><v-btn @click="stop(item.id, null, 'general')" icon
+                                                            slot="activator"
                                                             text><v-icon>stop</v-icon></v-btn></span>
                                     </div>
                                 </td>
@@ -72,14 +82,15 @@
                                     <div class="caption pl-7">{{sub.desc}}</div>
                                 </td>
                                 <td>
-                                    <span v-if="sub.startTask !== ''">{{sub.startTask}}</span>
-                                    <span v-else><v-btn icon slot="activator" @click="start(item.id, sub.id, 'subTask')"
+                                    <span v-if="sub.startTask !== ''">{{dateFormat(sub.startTask)}}</span>
+                                    <span v-else><v-btn @click="start(item.id, sub.id, 'subTask')" icon slot="activator"
                                                         text><v-icon>play_circle_filled</v-icon></v-btn></span>
                                 </td>
                                 <td>
                                     <div v-if="sub.startTask !== ''">
-                                        <span v-if="sub.endTask !== ''">{{sub.endTask}}</span>
-                                        <span v-else><v-btn icon slot="activator" @click="stop(item.id, sub.id, 'subTask')"
+                                        <span v-if="sub.endTask !== ''">{{dateFormat(sub.endTask)}}</span>
+                                        <span v-else><v-btn @click="stop(item.id, sub.id, 'subTask')" icon
+                                                            slot="activator"
                                                             text><v-icon>stop</v-icon></v-btn></span>
                                     </div>
                                 </td>
@@ -113,7 +124,7 @@
                 </v-card-text>
             </v-card>
         </v-flex>
-         <taskEditor :parameters="editParameters" :key="editWindow"/>
+        <taskEditor :key="editWindow" :parameters="editParameters"/>
     </v-layout>
 </template>
 
@@ -158,13 +169,14 @@
                         sortable: false,
                     },
                 ],
+                search: '',
                 editParameters: {
                     dialog: false,
                     generalID: '',
                     subTaskID: '',
                     type: '',
                 },
-                editWindow:0
+                editWindow: 0
             }
         },
         created() {
@@ -174,26 +186,26 @@
             init: function () {
                 this.$store.dispatch("fetchTasks");
             },
-             stop(generalTaskID, subTaskID, type) {
+            stop(generalTaskID, subTaskID, type) {
                 let vue = this;
                 if (type == 'general') {
                     this.$store.dispatch("fetchTasksByID", generalTaskID).then((response) => {
                         response.data.endTask = new Date();
                         vue.$store.dispatch("putTasks", response.data)
-                            .catch((error) => {})
+                            .catch((error) => {
+                            })
                             .finally(() => {
                                 vue.$store.dispatch("fetchTasks");
                             })
                     })
-                }
-                else {
+                } else {
 
                     this.$store.dispatch("fetchTasksByID", generalTaskID).then((response) => {
                         let task = response.data;
                         for (let i in task.subTasks) {
                             let subTask = task.subTasks[i];
                             if (subTaskID === subTask.id) {
-                                subTask.endTask  = new Date();
+                                subTask.endTask = new Date();
                                 break;
                             }
                         }
@@ -209,29 +221,60 @@
                 let vue = this;
                 if (type == 'general') {
                     this.$store.dispatch("fetchTasksByID", generalTaskID).then((response) => {
-                       response.data.startTask = new Date();
-                       vue.$store.dispatch("putTasks", response.data)
-                            .catch((error) => {})
+                        response.data.startTask = new Date();
+                        vue.$store.dispatch("putTasks", response.data)
+                            .catch((error) => {
+                            })
                             .finally(() => {
                                 vue.$store.dispatch("fetchTasks");
                             })
                     })
-                }
-                else {
+                } else {
 
                     this.$store.dispatch("fetchTasksByID", generalTaskID).then((response) => {
                         let task = response.data;
                         for (let i in task.subTasks) {
                             let subTask = task.subTasks[i];
                             if (subTaskID === subTask.id) {
-                                subTask.startTask  = new Date();
+                                subTask.startTask = new Date();
                                 break;
                             }
                         }
                         vue.$store.dispatch("putTasks", task).catch((error) => {
                         }).finally(() => {
                             vue.$store.dispatch("fetchTasks");
-                         })
+                        })
+                    });
+                }
+                return true;
+            },
+            delete(generalTaskID, subTaskID, type) {
+                let vue = this;
+                if (type == 'general') {
+                    this.$store.dispatch("fetchTasksByID", generalTaskID).then((response) => {
+                        response.data.startTask = new Date();
+                        vue.$store.dispatch("putTasks", response.data)
+                            .catch((error) => {
+                            })
+                            .finally(() => {
+                                vue.$store.dispatch("fetchTasks");
+                            })
+                    })
+                } else {
+
+                    this.$store.dispatch("fetchTasksByID", generalTaskID).then((response) => {
+                        let task = response.data;
+                        for (let i in task.subTasks) {
+                            let subTask = task.subTasks[i];
+                            if (subTaskID === subTask.id) {
+                                subTask.startTask = new Date();
+                                break;
+                            }
+                        }
+                        vue.$store.dispatch("putTasks", task).catch((error) => {
+                        }).finally(() => {
+                            vue.$store.dispatch("fetchTasks");
+                        })
                     });
                 }
                 return true;
@@ -241,11 +284,14 @@
                 this.editParameters['generalID'] = generalTaskID;
                 this.editParameters['subTaskID'] = subtaskID;
                 this.editParameters['type'] = type;
-                this.editWindow ++;
+                this.editWindow++;
                 return true;
 
             },
-            delete(task, type) {
+            dateFormat(eventDate) {
+                let current_datetime = new Date(eventDate);
+                let formatted_date = current_datetime.getFullYear() + "-" + (current_datetime.getMonth() + 1) + "-" + current_datetime.getDate() + " " + current_datetime.getHours() + ":" + current_datetime.getMinutes() + ":" + current_datetime.getSeconds();
+                return formatted_date
             },
         },
         computed: {
