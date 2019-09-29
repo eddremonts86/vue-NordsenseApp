@@ -4,43 +4,57 @@
             <v-card>
                 <v-card-title class="primary">
                     <v-spacer></v-spacer>
-                    <taskCreator/>
+                    <taskCreator  :parameters="repo"/>
                 </v-card-title>
                 <v-card-text class="pa-5">
+                    <v-layout>
+                        <v-flex xs12 md6 class="mx-2">
+                            <v-select
+                                    :items="getRepos"
+                                    @change="reposChanges"
+                                    item-text="name"
+                                    item-value="name"
+                                    label="Repos"
+                                    outlined
+                                    append-icon="search"
+                                    v-model="repo"
+                            ></v-select>
+                        </v-flex>
+                        <v-flex xs12 md6 class="mx-2">
+                            <v-text-field
+                                    append-icon="search"
+                                    hide-details
+                                    label="Search"
+                                    single-line
+                                    v-model="search"
+                                    outlined
+                            />
+                        </v-flex>
+                    </v-layout>
                     <v-data-table
                             :headers="headers"
-                            :items="getTask"
+                            :items="getTasks"
+                            :search="search"
                             class="elevation-1"
                             item-key="id"
-                            show-select
                     >
                         <template v-slot:body="{items}">
 
                             <tbody :key="item.id" v-for="item in items">
-                            <tr :class="item.status">
-                                <td>
-                                    <v-checkbox></v-checkbox>
-                                </td>
+                            <tr :class="item.state">
                                 <td class="py-3">
-                                    <div class="body-1">{{item.name}}</div>
-                                    <div class="caption pl-1">{{item.desc}}</div>
+                                    <div class="body-1">{{item.title}}</div>
+                                    <div class="caption pl-1">{{item.body}}</div>
                                 </td>
                                 <td>
-                                    <span v-if="item.startTask !== ''">{{item.startTask}}</span>
-                                    <span v-else><v-btn icon slot="activator" @click="start(item.id, null, 'general')"
+                                    <span v-if="item.startTask !== ''">{{dateFormat(item.updated_at)}}</span>
+                                    <span v-else><v-btn @click="start(item.id, null, 'general')" icon slot="activator"
                                                         text><v-icon>play_circle_filled</v-icon></v-btn></span>
                                 </td>
-                                <td>
-                                    <div v-if="item.startTask !== ''">
-                                        <span v-if="item.endTask !== ''">{{item.endTask}}</span>
-                                        <span v-else><v-btn icon slot="activator" @click="stop(item.id, null, 'general')"
-                                                            text><v-icon>stop</v-icon></v-btn></span>
-                                    </div>
-                                </td>
-                                <td>{{item.fullTime}}</td>
+                                <td>{{item.state}}</td>
                                 <td>
                                     <v-btn
-                                            @click="edit(item.id, null, 'general')"
+                                            @click="edit(item.number)"
                                             icon
                                             slot="activator" text
                                     >
@@ -59,61 +73,16 @@
                                     </v-btn>
 
 
-                                </td>
-                            </tr>
-                            <tr :class="sub.status" :key="key" v-for="(sub, key) in item.subTasks"
-                                v-if="(item.subTasks).length > 0">
-                                <td></td>
-                                <td class="pl-7 py-3">
-                                    <div class="body-1">
-                                        <v-icon>subdirectory_arrow_right</v-icon>
-                                        {{sub.name}}
-                                    </div>
-                                    <div class="caption pl-7">{{sub.desc}}</div>
-                                </td>
-                                <td>
-                                    <span v-if="sub.startTask !== ''">{{sub.startTask}}</span>
-                                    <span v-else><v-btn icon slot="activator" @click="start(item.id, sub.id, 'subTask')"
-                                                        text><v-icon>play_circle_filled</v-icon></v-btn></span>
-                                </td>
-                                <td>
-                                    <div v-if="sub.startTask !== ''">
-                                        <span v-if="sub.endTask !== ''">{{sub.endTask}}</span>
-                                        <span v-else><v-btn icon slot="activator" @click="stop(item.id, sub.id, 'subTask')"
-                                                            text><v-icon>stop</v-icon></v-btn></span>
-                                    </div>
-                                </td>
-                                <td>{{sub.fullTime}}</td>
-                                <td class="text-xl-right">
-                                    <v-btn
-                                            @click="edit(item.id, sub.id, 'subTask')"
-                                            icon
-                                            slot="activator" text
-                                    >
-                                        <v-icon flat>
-                                            edit
-                                        </v-icon>
-                                    </v-btn>
-                                    <v-btn
-                                            icon
-                                            slot="activator" text
-                                    >
-                                        <v-icon>
-                                            delete
-                                        </v-icon>
-                                    </v-btn>
                                 </td>
                             </tr>
                             </tbody>
 
                         </template>
                     </v-data-table>
-
-
                 </v-card-text>
             </v-card>
         </v-flex>
-         <taskEditor :parameters="editParameters" :key="editWindow"/>
+        <taskEditor :key="editWindow" :parameters="editParameters"/>
     </v-layout>
 </template>
 
@@ -129,28 +98,22 @@
             return {
                 headers: [
                     {
-                        text: 'Tasks',
+                        text: 'Issues',
                         align: 'left',
                         sortable: false,
                         value: 'name',
                     },
                     {
-                        text: 'Start Task',
+                        text: 'Reported ',
                         align: 'left',
                         sortable: false,
                         value: 'startTask',
                     },
                     {
-                        text: 'End Task',
+                        text: 'Status',
                         align: 'left',
                         sortable: false,
                         value: 'endTask',
-                    },
-                    {
-                        text: 'Full Time',
-                        align: 'left',
-                        sortable: false,
-                        value: 'fullTime',
                     },
                     {
                         text: 'Actions',
@@ -158,13 +121,15 @@
                         sortable: false,
                     },
                 ],
+                search: '',
                 editParameters: {
                     dialog: false,
                     generalID: '',
                     subTaskID: '',
                     type: '',
                 },
-                editWindow:0
+                editWindow: 0,
+                repo: ''
             }
         },
         created() {
@@ -172,28 +137,31 @@
         },
         methods: {
             init: function () {
-                this.$store.dispatch("fetchTasks");
+                this.$store.dispatch("fetchRepos");
             },
-             stop(generalTaskID, subTaskID, type) {
+            reposChanges() {
+                this.$store.dispatch("fetchTasks", this.repo);
+            },
+            stop(generalTaskID, subTaskID, type) {
                 let vue = this;
                 if (type == 'general') {
                     this.$store.dispatch("fetchTasksByID", generalTaskID).then((response) => {
                         response.data.endTask = new Date();
                         vue.$store.dispatch("putTasks", response.data)
-                            .catch((error) => {})
+                            .catch((error) => {
+                            })
                             .finally(() => {
                                 vue.$store.dispatch("fetchTasks");
                             })
                     })
-                }
-                else {
+                } else {
 
                     this.$store.dispatch("fetchTasksByID", generalTaskID).then((response) => {
                         let task = response.data;
                         for (let i in task.subTasks) {
                             let subTask = task.subTasks[i];
                             if (subTaskID === subTask.id) {
-                                subTask.endTask  = new Date();
+                                subTask.endTask = new Date();
                                 break;
                             }
                         }
@@ -209,52 +177,84 @@
                 let vue = this;
                 if (type == 'general') {
                     this.$store.dispatch("fetchTasksByID", generalTaskID).then((response) => {
-                       response.data.startTask = new Date();
-                       vue.$store.dispatch("putTasks", response.data)
-                            .catch((error) => {})
+                        response.data.startTask = new Date();
+                        vue.$store.dispatch("putTasks", response.data)
+                            .catch((error) => {
+                            })
                             .finally(() => {
                                 vue.$store.dispatch("fetchTasks");
                             })
                     })
-                }
-                else {
+                } else {
 
                     this.$store.dispatch("fetchTasksByID", generalTaskID).then((response) => {
                         let task = response.data;
                         for (let i in task.subTasks) {
                             let subTask = task.subTasks[i];
                             if (subTaskID === subTask.id) {
-                                subTask.startTask  = new Date();
+                                subTask.startTask = new Date();
                                 break;
                             }
                         }
                         vue.$store.dispatch("putTasks", task).catch((error) => {
                         }).finally(() => {
                             vue.$store.dispatch("fetchTasks");
-                         })
+                        })
                     });
                 }
                 return true;
             },
-            edit(generalTaskID, subtaskID, type) {
+            delete(generalTaskID, subTaskID, type) {
+                let vue = this;
+                if (type == 'general') {
+                    this.$store.dispatch("fetchTasksByID", generalTaskID).then((response) => {
+                        response.data.startTask = new Date();
+                        vue.$store.dispatch("putTasks", response.data)
+                            .catch((error) => {
+                            })
+                            .finally(() => {
+                                vue.$store.dispatch("fetchTasks");
+                            })
+                    })
+                } else {
+
+                    this.$store.dispatch("fetchTasksByID", generalTaskID).then((response) => {
+                        let task = response.data;
+                        for (let i in task.subTasks) {
+                            let subTask = task.subTasks[i];
+                            if (subTaskID === subTask.id) {
+                                subTask.startTask = new Date();
+                                break;
+                            }
+                        }
+                        vue.$store.dispatch("putTasks", task).catch((error) => {
+                        }).finally(() => {
+                            vue.$store.dispatch("fetchTasks");
+                        })
+                    });
+                }
+                return true;
+            },
+            edit(generalTaskID) {
                 this.editParameters['dialog'] = true;
-                this.editParameters['generalID'] = generalTaskID;
-                this.editParameters['subTaskID'] = subtaskID;
-                this.editParameters['type'] = type;
-                this.editWindow ++;
+                this.editParameters['id'] = generalTaskID;
+                this.editParameters['repo'] = this.repo;
+                 this.editWindow++;
                 return true;
 
             },
-            delete(task, type) {
+            dateFormat(eventDate) {
+                let current_datetime = new Date(eventDate);
+                let formatted_date = current_datetime.getFullYear() + "-" + (current_datetime.getMonth() + 1) + "-" + current_datetime.getDate() + " " + current_datetime.getHours() + ":" + current_datetime.getMinutes() + ":" + current_datetime.getSeconds();
+                return formatted_date
             },
         },
         computed: {
             ...
                 mapGetters([
-                    'getTask'
+                    'getTasks', 'getRepos'
                 ])
-        }
-        ,
+        },
     }
 </script>
 

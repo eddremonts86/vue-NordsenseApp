@@ -10,6 +10,6 @@ export default new Router({
             path: '/',
             name: 'about',
             component: () => import('./components/task/tasksList.vue')
-        }
+        },
     ]
 })

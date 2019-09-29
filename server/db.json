@@ -26,6 +26,18 @@
           "enabled": true
         }
       ]
+    },
+    {
+      "name": "zscdsdasd",
+      "desc": "sdasdasdsa",
+      "id": 0.8684306490309672,
+      "startTask": "",
+      "endTask": "",
+      "fullTime": "",
+      "status": "",
+      "place": "sdasdasda",
+      "guests": [],
+      "enabled": true
     }
   ],
   "users": [
@@ -33,6 +45,15 @@
       "name": "Eduardo Inerarte",
       "alias": "Edd Remonts",
       "photo": "https://avatars3.githubusercontent.com/u/21958221?s=60&v=4"
+    }
+  ],
+  "github": [
+    {
+      "code": "d007005b3e23adcb1cdf",
+      "clientId": "4c366bdf74436a70b284",
+      "redirectUri": "http://localhost:8080/auth/callback",
+      "id": 1,
+      "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI1ZDhjY2M1MzBiM2RmOTAxZjM2NDAyZmIiLCJpYXQiOjE1Njk3NDQ3MjMsImV4cCI6MTU3MDk1NDMyM30.cLaNttEG7_2BDHMXZ9r12kmakswWGg2IheKFR52j3AM"
     }
   ]
 }

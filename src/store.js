@@ -2,18 +2,32 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import Axios from "axios";
 
-Vue.use(Vuex, Axios);
+Vue.use(Vuex);
 
 export default new Vuex.Store({
     state: {
         tasks: [],
+        task: [],
         users: [],
         githubToken: '',
-        baseUrl: 'http://localhost:3000/'
+        externalBaseURL: 'https://api.github.com',
+        user: "eddremonts86",
+        repos: [],
+        headers: {
+            Authorization: "token c9b827ab6e72e426a95ce6997ca47b51c451cedb",
+            "content-type": "application/json",
+            'User-Agent': 'eddremonts86',
+            Accept: "application/json, " +
+                    "text/plain," +
+                    "application/vnd.github.symmetra-preview+json"
+        }
     },
     mutations: {
-        setTask(state, data) {
+        setTasks(state, data) {
             state.tasks = data;
+        },
+        setTask(state, data) {
+            state.task = data;
         },
         setUsers(state, data) {
             state.users = data;
@@ -21,40 +35,52 @@ export default new Vuex.Store({
         setGithubToken(state, data) {
             state.githubToken = data;
         },
-    },
-    actions: {
-        fetchTasks({state,commit}) {
-            const urlBase = state.baseUrl + "tasks";
-            let data = Axios.get(urlBase).then((response)=>{
-              commit('setTask', response.data);
-            });
-            return data
-        },
-        fetchTasksByID({state}, id) {
-            const urlBase = state.baseUrl + "tasks/" + id;
-            let data = Axios.get(urlBase);
-            return data
-        },
-        postTasks({state}, dataObj) {
-            const urlBase = state.baseUrl + "tasks";
-            let data = Axios.post(urlBase, dataObj);
-            return data
+        setRepos(state, data) {
+            state.repos = data;
         },
 
-        putTasks({state}, parameters) {
-            const urlBase = state.baseUrl + "tasks/" + parameters.id;
-            let data = Axios.put(urlBase, parameters);
-            return data
+    },
+    actions: {
+        fetchTasks({state, commit}, repo) {
+            const urlBase = state.externalBaseURL + '/repos/' + state.user + '/' + repo + '/issues?state=all';
+            Axios.get(urlBase).then((response) => {
+                commit('setTasks', response.data, state.headers);
+            });
         },
-        deleteTasks({state}, id) {
-            const urlBase = state.baseUrl + "tasks/" + id;
-            let data = Axios.delete(urlBase, id);
-            return data
+        async fetchTasksByID({commit, state}, parameters) {
+            const urlBase = state.externalBaseURL + '/repos/' + state.user + '/' + parameters.repo + '/issues/' + parameters.id;
+            let data = await Axios.get(urlBase, state.headers);
+            commit('setTask', data.data);
+            return data.data
+        },
+        postTasks({state}, parameters) {
+             const urlBase = state.externalBaseURL + '/repos/' + state.user + '/' + parameters.repo + '/issues';
+            return Axios.post(urlBase, parameters.obj, state.headers)
+
+        },
+        putTasks({state, commit}, parameters) {
+            const urlBase = state.externalBaseURL + '/repos/' + state.user + '/' + parameters.repo + '/issues/' + parameters.id;
+            Axios.patch(urlBase).then(() => {
+                commit('setTask', parameters.obj, state.headers);
+            });
+        },
+        fetchRepos({state, commit}) {
+            const urlBase = state.externalBaseURL + '/users/' + state.user + '/repos';
+            Axios.get(urlBase).then((response) => {
+                commit('setRepos', response.data, state.headers);
+            });
         },
     },
-    getters:{
-      getTask(state) {
-        return state.tasks;
-      },
+    getters: {
+        getTasks(state) {
+            return state.tasks;
+        },
+        getTask(state) {
+            return state.task;
+        },
+        getRepos(state) {
+            return state.repos;
+        },
+
     }
 })
