@@ -1,5 +1,5 @@
 <template>
-    <v-dialog max-width="60%" v-model="parameters['dialog']">
+    <v-dialog :key="reloadDom" max-width="60%" v-model="parameters['dialog']">
         <v-card>
             <v-card-title class="primary">
                 <span class="headline">Create a new Task</span>
@@ -7,46 +7,14 @@
             <v-card-text>
                 <v-container grid-list-md>
                     <v-layout wrap>
-                        <v-flex class="xs12 md6">
+                        <v-flex class="xs12 md6 pt-4">
                             <v-layout wrap>
                                 <v-flex xs12>
                                     <v-text-field label="Name" outlined v-model="taskItems['name']"></v-text-field>
                                 </v-flex>
                                 <v-flex xs12>
-                                    <v-text-field label="Place" outlined v-model="taskItems['place']"></v-text-field>
-                                </v-flex>
-                                <v-flex xs12>
-                                    <v-select :items="getTask" item-text="name" item-value="id" label="Parents"
-                                              outlined
-                                              v-model="taskItems['parents']">Parent Tasks
-                                    </v-select>
-                                </v-flex>
-                            </v-layout>
-                        </v-flex>
-                        <v-flex class="xs12 md6">
-                            <v-layout wrap>
-                                <v-flex xs12>
                                     <v-textarea label="Task Description" outlined
                                                 v-model="taskItems['desc']"></v-textarea>
-                                </v-flex>
-                                <v-flex class="grey darken-2 pa-4 radio5 mt-1 mx-1" xs12>
-                                    <v-layout wrap>
-                                        <v-flex class="xs9">
-                                            <v-text-field :rules="emailRules" label="Email task guests" outlined
-
-                                                          v-model="taskItems['guest']"></v-text-field>
-                                        </v-flex>
-                                        <v-flex class="xs2">
-                                            <v-btn @click="guests.push(taskItems['guest'])">
-                                                <v-icon>add</v-icon>
-                                            </v-btn>
-                                        </v-flex>
-                                        <v-flex class="xs12 px-4" v-show="guests && guests.length > 0">
-                                            <div :key="key" class="guest" v-for="(guest , key) in guests">
-                                                {{guest}}
-                                            </div>
-                                        </v-flex>
-                                    </v-layout>
                                 </v-flex>
                             </v-layout>
                         </v-flex>
@@ -54,7 +22,6 @@
                 </v-container>
             </v-card-text>
             <v-card-actions class="grey darken-4">
-                <v-btn @click="save(false)" class="primary" text>Create and closeWindow</v-btn>
                 <v-spacer></v-spacer>
                 <v-btn @click="close" class="error" text>Cancel</v-btn>
                 <v-btn @click="save(true)" class="primary" text>Save</v-btn>
@@ -71,12 +38,8 @@
         data() {
             return {
                 taskItems: [],
-                guests: [],
-                emailRules: [
-                    v => !!v || 'E-mail is required',
-                    v => /.+@.+/.test(v) || 'E-mail must be valid',
-                ],
-                taskObject: {}
+                taskObject: {},
+                reloadDom: 0
             }
         },
         props: ['parameters'],
@@ -84,35 +47,11 @@
             init() {
                 let vue = this;
                 if (vue.parameters['dialog']) {
-                    vue.$store.dispatch("fetchTasksByID", vue.parameters['generalID']).then((response) => {
-                        this.taskObject = response.data;
-                        if (vue.parameters['type'] == 'general') {
-                            vue.taskItems.name = response.data.name;
-                            vue.taskItems.desc = response.data.desc;
-                            vue.taskItems.place = response.data.place;
-                            vue.taskItems.parents = response.data.parent;
-                            vue.taskItems.enabled = response.data.enabled;
-                            vue.taskItems.startTask = response.data.startTask;
-                            vue.taskItems.endTask = response.data.endTask;
-                            vue.taskItems.status = response.data.status;
-                            vue.guests = response.data.guests
-                        } else {
-                            for (let i in response.data.subTasks) {
-                                let subTask = response.data.subTasks[i];
-                                if (vue.parameters['subTaskID'] === subTask.id) {
-                                    vue.taskItems.name = subTask.name;
-                                    vue.taskItems.desc = subTask.desc;
-                                    vue.taskItems.place = subTask.place;
-                                    vue.taskItems.parents = subTask.parent;
-                                    vue.taskItems.enabled = subTask.enabled;
-                                    vue.taskItems.startTask = subTask.startTask;
-                                    vue.taskItems.endTask = subTask.endTask;
-                                    vue.guests = subTask.guests;
-                                    break;
-                                }
-                            }
-                        }
-                    })
+                    vue.$store.dispatch("fetchTasksByID", vue.parameters).then((response) => {
+                        this.taskItems['name'] = response.title;
+                        this.taskItems['desc'] = response.body;
+                        this.reload()
+                    }, this)
                 }
             },
             close(closeWindow) {
@@ -123,58 +62,23 @@
                         this.parameters['dialog'] = false;
                 }, 300)
             },
-            save(closeWindow) {
-                let vue = this;
-                let newTask = {
-                    "name": this.taskItems.name,
-                    "desc": this.taskItems.desc,
-                    "startTask": "",
-                    "endTask": "",
-                    "fullTime": "",
-                    "status": "",
-                    "id": vue.parameters['generalID'],
-                    "place": this.taskItems.place,
-                    "guests": this.guests,
-                    "parent": this.taskItems.parents,
-                    "enabled": true,
-                };
-                if (vue.parameters['type'] == 'general') {
-                    this.$store.dispatch("fetchTasksByID", this.parameters['generalID']).then((response) => {
-                        if (response.data.subTasks) {
-                            newTask["subTasks"] = [];
-                            newTask.subTasks = response.data.subTasks
+            save() {
+                let newTask =
+                    {
+                        'repo': this.parameters.repo,
+                        'id': this.parameters.id,
+                        'obj': {
+                            "title": this.taskItems.name,
+                            "body": this.taskItems.desc,
+                            "state": "open",
+                            "labels": ["bug"]
                         }
-                        vue.$store.dispatch("putTasks", newTask)
-                            .catch((error) => {
-                            })
-                            .finally(() => {
-                                vue.$store.dispatch("fetchTasks");
-                                vue.close(closeWindow)
-                            })
-                    })
-                } else {
-                    newTask.id = vue.parameters['subTaskID'];
-                    this.$store.dispatch("fetchTasksByID", this.parameters['generalID']).then((response) => {
-                        let task = response.data;
-                        for (let i in task.subTasks) {
-                            let subTask = task.subTasks[i];
-                            if (vue.parameters['subTaskID'] === subTask.id) {
-                                task.subTasks.splice(i, 1);
-                                task.subTasks.push(newTask);
-                                break;
-                            }
-                        }
-                        vue.$store.dispatch("putTasks", task).catch((error) => {
-                        }).finally(() => {
-                            vue.$store.dispatch("fetchTasks");
-                            vue.close(closeWindow)
-                        })
-                    });
-                }
-
-
-                return true;
+                    };
+                this.$store.dispatch("putTasks", newTask).then(this.close(true))
             },
+            reload() {
+                this.reloadDom++
+            }
         },
         computed: {
             ...mapGetters([

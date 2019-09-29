@@ -1,42 +1,33 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import VueAxios from 'vue-axios'
-import { VueAuthenticate } from 'vue-authenticate'
 import Axios from "axios";
 
-Vue.use(Vuex)
-Vue.use(VueAxios, Axios)
-const vueAuth = new VueAuthenticate(Vue.prototype.$http, {
-    baseUrl: 'http://localhost:3000',
-    tokenName: 'c2feacd02b8611fc89fc3ad3e8cd1e2d6986e2de',
-    storageType: 'localStorage',
-    providers: {
-        github: {
-            name: 'github',
-            url: '/auth/github',
-            authorizationEndpoint: 'https://github.com/login/oauth/authorize',
-            redirectUri: 'http://localhost:8080/' ,
-            optionalUrlParams: ['scope'],
-            scope: ['user:email'],
-            scopeDelimiter: ' ',
-            oauthType: '2.0',
-            popupOptions: { width: 1020, height: 618 }
-        },
-    }
-})
+Vue.use(Vuex);
 
 export default new Vuex.Store({
     state: {
         tasks: [],
+        task: [],
         users: [],
         githubToken: '',
-        baseUrl: 'http://localhost:3000/',
-        isAuthenticated: false
-
+        externalBaseURL: 'https://api.github.com',
+        user: "eddremonts86",
+        repos: [],
+        headers: {
+            Authorization: "token c9b827ab6e72e426a95ce6997ca47b51c451cedb",
+            "content-type": "application/json",
+            'User-Agent': 'eddremonts86',
+            Accept: "application/json, " +
+                    "text/plain," +
+                    "application/vnd.github.symmetra-preview+json"
+        }
     },
     mutations: {
-        setTask(state, data) {
+        setTasks(state, data) {
             state.tasks = data;
+        },
+        setTask(state, data) {
+            state.task = data;
         },
         setUsers(state, data) {
             state.users = data;
@@ -44,55 +35,52 @@ export default new Vuex.Store({
         setGithubToken(state, data) {
             state.githubToken = data;
         },
-        isAuthenticated(state, payload) {
-            state.isAuthenticated = payload.isAuthenticated
-        }
+        setRepos(state, data) {
+            state.repos = data;
+        },
+
     },
     actions: {
-        fetchTasks({state, commit}) {
-            const urlBase = state.baseUrl + "tasks";
-            let data = Axios.get(urlBase).then((response) => {
-                commit('setTask', response.data);
+        fetchTasks({state, commit}, repo) {
+            const urlBase = state.externalBaseURL + '/repos/' + state.user + '/' + repo + '/issues?state=all';
+            Axios.get(urlBase).then((response) => {
+                commit('setTasks', response.data, state.headers);
             });
-            return data
         },
-        fetchTasksByID({state}, id) {
-            const urlBase = state.baseUrl + "tasks/" + id;
-            let data = Axios.get(urlBase);
-            return data
+        async fetchTasksByID({commit, state}, parameters) {
+            const urlBase = state.externalBaseURL + '/repos/' + state.user + '/' + parameters.repo + '/issues/' + parameters.id;
+            let data = await Axios.get(urlBase, state.headers);
+            commit('setTask', data.data);
+            return data.data
         },
-        postTasks({state}, dataObj) {
-            const urlBase = state.baseUrl + "tasks";
-            let data = Axios.post(urlBase, dataObj);
-            return data
-        },
+        postTasks({state}, parameters) {
+             const urlBase = state.externalBaseURL + '/repos/' + state.user + '/' + parameters.repo + '/issues';
+            return Axios.post(urlBase, parameters.obj, state.headers)
 
-        putTasks({state}, parameters) {
-            const urlBase = state.baseUrl + "tasks/" + parameters.id;
-            let data = Axios.put(urlBase, parameters);
-            return data
         },
-        deleteTasks({state}, id) {
-            const urlBase = state.baseUrl + "tasks/" + id;
-            let data = Axios.delete(urlBase, id);
-            return data
+        putTasks({state, commit}, parameters) {
+            const urlBase = state.externalBaseURL + '/repos/' + state.user + '/' + parameters.repo + '/issues/' + parameters.id;
+            Axios.patch(urlBase).then(() => {
+                commit('setTask', parameters.obj, state.headers);
+            });
         },
-        login(context, payload) {
-            vueAuth.login(payload.user, payload.requestOptions).then((response) => {
-                context.commit('isAuthenticated', {
-                    isAuthenticated: vueAuth.isAuthenticated()
-                })
-            })
-
-
-        }
+        fetchRepos({state, commit}) {
+            const urlBase = state.externalBaseURL + '/users/' + state.user + '/repos';
+            Axios.get(urlBase).then((response) => {
+                commit('setRepos', response.data, state.headers);
+            });
+        },
     },
-    getters:{
-            getTask(state){
-                return state.tasks;
-            },
-            isAuthenticated(){
-                return vueAuth.isAuthenticated()
-            }
+    getters: {
+        getTasks(state) {
+            return state.tasks;
+        },
+        getTask(state) {
+            return state.task;
+        },
+        getRepos(state) {
+            return state.repos;
+        },
+
     }
 })

@@ -18,15 +18,6 @@
                                 <v-flex xs12>
                                     <v-text-field label="Name" outlined v-model="taskItems['name']"></v-text-field>
                                 </v-flex>
-                                <v-flex xs12>
-                                    <v-text-field label="Place" outlined v-model="taskItems['place']"></v-text-field>
-                                </v-flex>
-                                <v-flex xs12>
-                                    <v-select :items="getTask" item-text="name" item-value="id" label="Parents"
-                                              outlined
-                                              v-model="taskItems['parents']">Parent Tasks
-                                    </v-select>
-                                </v-flex>
                             </v-layout>
                         </v-flex>
                         <v-flex class="xs12 md6">
@@ -34,25 +25,6 @@
                                 <v-flex xs12>
                                     <v-textarea label="Task Description" outlined
                                                 v-model="taskItems['desc']"></v-textarea>
-                                </v-flex>
-                                <v-flex class="grey darken-2 pa-4 radio5 mt-1 mx-1" xs12>
-                                    <v-layout wrap>
-                                        <v-flex class="xs9">
-                                            <v-text-field :rules="emailRules" label="Email task guests" outlined
-
-                                                          v-model="taskItems['guest']"></v-text-field>
-                                        </v-flex>
-                                        <v-flex class="xs2">
-                                            <v-btn @click="guests.push(taskItems['guest'])">
-                                                <v-icon>add</v-icon>
-                                            </v-btn>
-                                        </v-flex>
-                                        <v-flex class="xs12 px-4" v-show="guests.length > 0">
-                                            <div :key="key" class="guest" v-for="(guest , key) in guests">
-                                                {{guest}}
-                                            </div>
-                                        </v-flex>
-                                    </v-layout>
                                 </v-flex>
                             </v-layout>
                         </v-flex>
@@ -74,60 +46,39 @@
 
     export default {
         name: "taskCreator",
+        props: ['parameters'],
         data() {
             return {
                 dialog: false,
                 taskItems: [],
-                guests: [],
-                emailRules: [
-                    v => !!v || 'E-mail is required',
-                    v => /.+@.+/.test(v) || 'E-mail must be valid',
-                ],
             }
         },
         methods: {
             close(closeWindow) {
                 setTimeout(() => {
                     this.taskItems = Object.assign({}, {});
-                    this.guests = []
+                    this.guests = [];
                     if (closeWindow)
                         this.dialog = false;
                 }, 300)
             },
-            save(closeWindow) {
-                let vue = this;
-                let newTask = {
-                    "name": this.taskItems.name,
-                    "desc": this.taskItems.desc,
-                    "id": Math.random(),
-                    "startTask": "",
-                    "endTask": "",
-                    "fullTime": "",
-                    "status": "",
-                    "place": this.taskItems.place,
-                    "guests": this.guests,
-                    "parent": this.taskItems.parents,
-                    "enabled": true,
-                 };
-                if (this.taskItems.parents) {
-                    this.$store.dispatch("fetchTasksByID", this.taskItems.parents).then((response) => {
-                        let task = response.data;
-                        if(!task["subTasks"]){task["subTasks"] = []}
-                        task.subTasks.push(newTask);
-                        vue.$store.dispatch("putTasks", task).catch((error) => {
-                        }).finally(() => {
-                            vue.$store.dispatch("fetchTasks");
-                            vue.close(closeWindow)
-                        })
-                    })
-
-                } else {
-                    this.$store.dispatch("postTasks", newTask).catch((error) => {
-                    }).finally(() => {
-                        vue.$store.dispatch("fetchTasks");
-                        vue.close(closeWindow)
-                    })
-                }
+            save() {
+                let newTask =
+                    {
+                        'repo': this.parameters,
+                        'obj': {
+                            "title": this.taskItems.name,
+                            "body": this.taskItems.desc,
+                            "assignees": [
+                                this.$store.state.user
+                            ],
+                            "milestone": 1,
+                            "labels": [
+                                "bug"
+                            ]
+                        }
+                    };
+                this.$store.dispatch("postTasks", newTask).then(this.close(true));
                 return true;
             },
         },
