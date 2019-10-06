@@ -11,6 +11,8 @@ Vue.use(VueSweetalert2, {
   confirmButtonColor: '#1f4aff',
   cancelButtonColor: '#C62828',
 });
+Vue.config.productionTip = false
+
 new Vue({
   vuetify,
   router,

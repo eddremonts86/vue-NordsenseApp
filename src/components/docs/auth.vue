@@ -1,9 +1,13 @@
 <template>
     <v-card>
-        <v-card-title class="_panel_border_bottom"><p class="header">Register your app</p></v-card-title>
-        <v-card-text class="pa-8 docs_text">
+        <v-card-title class="_panel_border_bottom">
+            <h3 >Register your app</h3>
+               <v-spacer></v-spacer>
+            <h5 class="header">Download the Repository here : <a href="https://github.com/eddremonts86/nordsenseApp" target="_blank" > NordSense</a></h5>
 
-            On your github account, go to settings -> OAuth Applications<br>
+        </v-card-title>
+        <v-card-text class="pa-8 docs_text">
+             On your github account, go to settings -> OAuth Applications<br>
             This is the image when you register your application
             <img class="radio5" src="https://i.stack.imgur.com/JOWKa.png" width="100%"></img>
 

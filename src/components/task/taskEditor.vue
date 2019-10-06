@@ -6,7 +6,7 @@
             </v-card-title>
             <v-card-text>
                 <v-layout wrap>
-                    <v-flex class="xs12 md6 pt-4">
+                    <v-flex class="xs12 pt-4">
                         <v-text-field label="Name" outlined v-model="taskItems['name']"></v-text-field>
                         <v-textarea label="Task Description" outlined v-model="taskItems['desc']"></v-textarea>
                         <v-select :items="state"

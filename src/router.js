@@ -11,8 +11,8 @@ export default new Router({
       name: "Task Board",
       component: () => import("./components/task/tasksList.vue")
     },{
-      path: "/auth",
-      name: "Auth Docs",
+      path: "/docs",
+      name: "Docs",
       component: () => import("./components/docs/auth.vue")
     }
   ]

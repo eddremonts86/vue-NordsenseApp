@@ -1,5 +1,7 @@
-# unitest
-
+# NordSense
+```
+Small app to manage all Git Repository Issues.  
+```
 ## Project setup
 ```
 npm install
