@@ -21,3 +21,14 @@
 .radio5 {
     border-radius: 5px;
 }
+._panel_border_bottom {
+    border-bottom: #1f4affa6 solid 1px;
+}
+.btn_primary {
+    color: #fff !important;
+    background: #1f4aff !important;
+}
+.color_primary {
+     color: #1f4aff !important;
+    background: #1f4aff !important;
+}

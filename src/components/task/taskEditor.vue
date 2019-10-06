@@ -1,30 +1,26 @@
 <template>
     <v-dialog :key="reloadDom" max-width="60%" v-model="parameters['dialog']">
         <v-card>
-            <v-card-title class="primary">
-                <span class="headline">Create a new Task</span>
+            <v-card-title class="_panel_border_bottom">
+                <span class="headline">Edit Task</span>
             </v-card-title>
             <v-card-text>
-                <v-container grid-list-md>
-                    <v-layout wrap>
-                        <v-flex class="xs12 md6 pt-4">
-                            <v-layout wrap>
-                                <v-flex xs12>
-                                    <v-text-field label="Name" outlined v-model="taskItems['name']"></v-text-field>
-                                </v-flex>
-                                <v-flex xs12>
-                                    <v-textarea label="Task Description" outlined
-                                                v-model="taskItems['desc']"></v-textarea>
-                                </v-flex>
-                            </v-layout>
-                        </v-flex>
-                    </v-layout>
-                </v-container>
+                <v-layout wrap>
+                    <v-flex class="xs12 md6 pt-4">
+                        <v-text-field label="Name" outlined v-model="taskItems['name']"></v-text-field>
+                        <v-textarea label="Task Description" outlined v-model="taskItems['desc']"></v-textarea>
+                        <v-select :items="state"
+                                  label="Task State"
+                                  outlined
+                                  v-model="taskItems['state']"
+                        ></v-select>
+                    </v-flex>
+                </v-layout>
             </v-card-text>
             <v-card-actions class="grey darken-4">
                 <v-spacer></v-spacer>
+                <v-btn @click="save(true)" class="btn_primary" text>Save</v-btn>
                 <v-btn @click="close" class="error" text>Cancel</v-btn>
-                <v-btn @click="save(true)" class="primary" text>Save</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
@@ -39,7 +35,8 @@
             return {
                 taskItems: [],
                 taskObject: {},
-                reloadDom: 0
+                reloadDom: 0,
+                state: ['open', 'closed']
             }
         },
         props: ['parameters'],
@@ -70,11 +67,10 @@
                         'obj': {
                             "title": this.taskItems.name,
                             "body": this.taskItems.desc,
-                            "state": "open",
-                            "labels": ["bug"]
+                            "state": this.taskItems.state
                         }
                     };
-                this.$store.dispatch("putTasks", newTask).then(this.close(true))
+                this.$store.dispatch("patchTasks", newTask).then(this.close(true))
             },
             reload() {
                 this.reloadDom++

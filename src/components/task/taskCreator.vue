@@ -1,41 +1,35 @@
 <template>
-    <v-dialog max-width="60%" v-model="dialog">
+    <v-dialog max-width="50%" v-model="dialog">
         <template v-slot:activator="{ on }">
-            <v-btn class="mb-2" color="primary" dark fab slot="activator" v-on="on">
+            <v-btn class="mb-2 btn_primary" dark fab slot="activator" v-on="on">
                 <v-icon dark> add</v-icon>
             </v-btn>
-
         </template>
         <v-card>
-            <v-card-title class="primary">
+            <v-card-title class="_panel_border_bottom">
                 <span class="headline">Create a new Task</span>
             </v-card-title>
-            <v-card-text>
-                <v-container grid-list-md>
-                    <v-layout wrap>
-                        <v-flex class="xs12 md6">
-                            <v-layout wrap>
-                                <v-flex xs12>
-                                    <v-text-field label="Name" outlined v-model="taskItems['name']"></v-text-field>
-                                </v-flex>
-                            </v-layout>
-                        </v-flex>
-                        <v-flex class="xs12 md6">
-                            <v-layout wrap>
-                                <v-flex xs12>
-                                    <v-textarea label="Task Description" outlined
-                                                v-model="taskItems['desc']"></v-textarea>
-                                </v-flex>
-                            </v-layout>
-                        </v-flex>
-                    </v-layout>
-
-                </v-container>
+            <v-card-text class="pt-5">
+                <v-flex xs12>
+                    <v-text-field label="Name" outlined v-model="taskItems['name']"></v-text-field>
+                    <v-textarea label="Task Description" outlined v-model="taskItems['desc']"></v-textarea>
+                    <v-select
+                            :items="getRepos"
+                            @change="reposChanges"
+                            append-icon="search"
+                            item-text="name"
+                            item-value="name"
+                            label="Repository List"
+                            outlined
+                            v-model="taskItems['repo']"
+                    ></v-select>
+                    <v-text-field label="Label" outlined v-model="taskItems['label']"></v-text-field>
+                </v-flex>
             </v-card-text>
             <v-card-actions class="grey darken-4">
                 <v-spacer></v-spacer>
+                <v-btn @click="save(true)" class="btn_primary" text>Save</v-btn>
                 <v-btn @click="close" class="error" text>Cancel</v-btn>
-                <v-btn @click="save(true)" class="primary" text>Save</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
@@ -51,6 +45,7 @@
             return {
                 dialog: false,
                 taskItems: [],
+                repo: ''
             }
         },
         methods: {
@@ -62,19 +57,21 @@
                         this.dialog = false;
                 }, 300)
             },
+            reposChanges() {
+                this.$store.dispatch("fetchTasks", this.repo);
+            },
             save() {
                 let newTask =
                     {
-                        'repo': this.parameters,
+                        'repo': this.taskItems.repo ? this.taskItems.repo : this.parameters,
                         'obj': {
                             "title": this.taskItems.name,
                             "body": this.taskItems.desc,
                             "assignees": [
                                 this.$store.state.user
                             ],
-                            "milestone": 1,
                             "labels": [
-                                "bug"
+                                this.taskItems.label
                             ]
                         }
                     };
@@ -84,7 +81,7 @@
         },
         computed: {
             ...mapGetters([
-                'getTask'
+                'getTask', 'getRepos'
             ])
         },
     }

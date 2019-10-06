@@ -2,83 +2,128 @@
     <v-layout>
         <v-flex>
             <v-card>
-                <v-card-title class="primary">
-                    <v-spacer></v-spacer>
-                    <taskCreator  :parameters="repo"/>
+                <v-card-title class="_panel_border_bottom">
+                    <v-spacer>GIT - Issues List</v-spacer>
+                    <taskCreator :parameters="repo"/>
                 </v-card-title>
                 <v-card-text class="pa-5">
-                    <v-layout>
-                        <v-flex xs12 md6 class="mx-2">
+                    <v-layout wrap>
+                        <v-flex class="px-2 my-3" md6 xs12>
                             <v-select
                                     :items="getRepos"
                                     @change="reposChanges"
+                                    append-icon="search"
                                     item-text="name"
                                     item-value="name"
-                                    label="Repos"
+                                    label="Repository List"
                                     outlined
-                                    append-icon="search"
                                     v-model="repo"
                             ></v-select>
                         </v-flex>
-                        <v-flex xs12 md6 class="mx-2">
+                        <v-flex class="px-2 my-3" md6 v-show="repo" xs12>
                             <v-text-field
                                     append-icon="search"
                                     hide-details
-                                    label="Search"
+                                    label="Search by issues"
+                                    outlined
                                     single-line
                                     v-model="search"
-                                    outlined
                             />
                         </v-flex>
+
                     </v-layout>
-                    <v-data-table
-                            :headers="headers"
-                            :items="getTasks"
-                            :search="search"
-                            class="elevation-1"
-                            item-key="id"
-                    >
-                        <template v-slot:body="{items}">
 
-                            <tbody :key="item.id" v-for="item in items">
-                            <tr :class="item.state">
-                                <td class="py-3">
-                                    <div class="body-1">{{item.title}}</div>
-                                    <div class="caption pl-1">{{item.body}}</div>
-                                </td>
-                                <td>
-                                    <span v-if="item.startTask !== ''">{{dateFormat(item.updated_at)}}</span>
-                                    <span v-else><v-btn @click="start(item.id, null, 'general')" icon slot="activator"
-                                                        text><v-icon>play_circle_filled</v-icon></v-btn></span>
-                                </td>
-                                <td>{{item.state}}</td>
-                                <td>
-                                    <v-btn
-                                            @click="edit(item.number)"
-                                            icon
-                                            slot="activator" text
-                                    >
-                                        <v-icon>
-                                            edit
-                                        </v-icon>
-                                    </v-btn>
-                                    <v-btn
+                    <v-card class="grey darken-4 radio5" v-show="repo">
+                        <v-card-actions>
+                            <v-flex class="px-2" md6 xs12>
+                                <v-layout>
+                                    <v-flex md4 xs12>
+                                        <v-switch
+                                                @click="getIssuse('all')"
+                                                color="blue darken-4"
+                                                label="All Issues "
+                                                v-model="all"
+                                                value="All Issues "
+                                        >
+                                        </v-switch>
+                                    </v-flex>
+                                    <v-flex md4 xs12>
+                                        <v-switch
+                                                @click="getIssuse('open')"
+                                                color="blue darken-4"
+                                                label="Opened Issues "
+                                                v-model="opened"
+                                                value="Opened Issues "
+                                        >
+                                        </v-switch>
+                                    </v-flex>
+                                    <v-flex md4 xs12>
+                                        <v-switch
+                                                @click="getIssuse('closed')"
+                                                color="blue darken-4"
+                                                label="Closed Issues "
+                                                v-model="closed"
+                                                value="Closed Issues "
+                                        >
+                                        </v-switch>
+                                    </v-flex>
+                                </v-layout>
+                            </v-flex>
+                        </v-card-actions>
+                        <v-card-text>
+                            <v-data-table
+                                    :headers="headers"
+                                    :items="getTasks"
+                                    :search="search"
+                                    class="elevation-1 radio5"
+                                    item-key="id"
+                            >
+                                <template v-slot:body="{items}">
+                                    <tbody :key="item.id" v-for="item in items">
+                                    <tr :class="item.state">
+                                        <td class="py-3">
+                                            <div class="body-1">{{item.title}}</div>
+                                            <div class="caption pl-1">{{item.body}}</div>
+                                        </td>
+                                        <td>
+                                            <span v-if="item.startTask !== ''">{{dateFormat(item.updated_at)}}</span>
+                                            <span v-else><v-btn @click="start(item.id, null, 'general')" icon
+                                                                slot="activator"
+                                                                text><v-icon>play_circle_filled</v-icon></v-btn></span>
+                                        </td>
+                                        <td>{{item.state}}</td>
+                                        <td>
+                                            <v-btn
+                                                    @click="edit(item.number)"
+                                                    icon
+                                                    slot="activator" text
+                                            >
+                                                <v-icon>
+                                                    edit
+                                                </v-icon>
+                                            </v-btn>
+                                            <v-btn
 
-                                            icon
-                                            slot="activator" text
-                                    >
-                                        <v-icon>
-                                            delete
-                                        </v-icon>
-                                    </v-btn>
+                                                    icon
+                                                    slot="activator" text
+                                            >
+                                                <v-icon>
+                                                    delete
+                                                </v-icon>
+                                            </v-btn>
 
 
-                                </td>
-                            </tr>
-                            </tbody>
+                                        </td>
+                                    </tr>
+                                    </tbody>
 
-                        </template>
-                    </v-data-table>
+                                </template>
+
+                            </v-data-table>
+                        </v-card-text>
+                    </v-card>
+
+
                 </v-card-text>
             </v-card>
         </v-flex>
@@ -101,7 +146,7 @@
                         text: 'Issues',
                         align: 'left',
                         sortable: false,
-                        value: 'name',
+                        value: 'title',
                     },
                     {
                         text: 'Reported ',
@@ -113,7 +158,7 @@
                         text: 'Status',
                         align: 'left',
                         sortable: false,
-                        value: 'endTask',
+                        value: 'state',
                     },
                     {
                         text: 'Actions',
@@ -129,7 +174,10 @@
                     type: '',
                 },
                 editWindow: 0,
-                repo: ''
+                repo: '',
+                all: false,
+                opened: false,
+                closed: false,
             }
         },
         created() {
@@ -140,7 +188,11 @@
                 this.$store.dispatch("fetchRepos");
             },
             reposChanges() {
-                this.$store.dispatch("fetchTasks", this.repo);
+                let parameters = {
+                    repo: this.repo,
+                    state: 'open'
+                };
+                this.$store.dispatch("fetchTasks", parameters);
             },
             stop(generalTaskID, subTaskID, type) {
                 let vue = this;
@@ -235,11 +287,11 @@
                 }
                 return true;
             },
-            edit(generalTaskID) {
+            edit(number) {
                 this.editParameters['dialog'] = true;
-                this.editParameters['id'] = generalTaskID;
+                this.editParameters['id'] = number;
                 this.editParameters['repo'] = this.repo;
-                 this.editWindow++;
+                this.editWindow++;
                 return true;
 
             },
@@ -248,6 +300,36 @@
                 let formatted_date = current_datetime.getFullYear() + "-" + (current_datetime.getMonth() + 1) + "-" + current_datetime.getDate() + " " + current_datetime.getHours() + ":" + current_datetime.getMinutes() + ":" + current_datetime.getSeconds();
                 return formatted_date
             },
+            getIssuse(state) {
+                if (!this.opened && !this.closed && !this.all) {
+                    this.reposChanges()
+                } else {
+                    let parameters = {
+                        repo: this.repo,
+                        state: state
+                    };
+                    this.$store.dispatch("fetchTasks", parameters);
+                    this.shiwtcherCase(state)
+                }
+                return true
+            },
+            shiwtcherCase(state) {
+                switch (state) {
+                    case 'all' :
+                        this.opened = false;
+                        this.closed = false;
+                        break;
+                    case 'closed' :
+                        this.all = false;
+                        this.opened = false;
+                        break;
+                    case 'open' :
+                        this.all = false;
+                        this.closed = false;
+                        break;
+                }
+                return true
+            }
         },
         computed: {
             ...
