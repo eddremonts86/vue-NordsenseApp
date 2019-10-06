@@ -1,5 +1,5 @@
 .done {
-   /* background: rgba(18, 36, 36, 0.82)*/
+    /* background: rgba(18, 36, 36, 0.82)*/
 }
 
 .canceled {
@@ -21,14 +21,31 @@
 .radio5 {
     border-radius: 5px;
 }
+
 ._panel_border_bottom {
     border-bottom: #1f4affa6 solid 1px;
 }
+
 .btn_primary {
     color: #fff !important;
     background: #1f4aff !important;
 }
+
 .color_primary {
-     color: #1f4aff !important;
+    color: #1f4aff !important;
     background: #1f4aff !important;
+}
+
+.swal2-popup {
+    color: #fff;
+    border: 2px solid #1f4aff59;
+    background: #282828;
+}
+
+.swal2-title {
+    color: #ffffff;
+}
+
+.swal2-content {
+    color: #ffffff;
 }

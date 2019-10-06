@@ -58,9 +58,17 @@
                 }, 300)
             },
             reposChanges() {
-                this.$store.dispatch("fetchTasks", this.repo);
+                let vue = this
+                this.$store.dispatch("fetchTasks", this.repo).catch((error)=>{
+                    vue.$swal({
+                        title: 'Some problem fetching the data',
+                        text: error,
+                        type: 'error',
+                    });
+                })
             },
             save() {
+                let vue = this
                 let newTask =
                     {
                         'repo': this.taskItems.repo ? this.taskItems.repo : this.parameters,
@@ -75,7 +83,21 @@
                             ]
                         }
                     };
-                this.$store.dispatch("postTasks", newTask).then(this.close(true));
+                this.$store.dispatch("postTasks", newTask)
+                    .then(() =>{
+                        this.close(true);
+                        vue.$swal({
+                            title: 'Success!',
+                            type: 'success',
+                        });
+                    })
+                    .catch((error) => {
+                    vue.$swal({
+                        title: 'Problem with creating the task issues',
+                        text: error,
+                        type: 'error',
+                    });
+                });
                 return true;
             },
         },

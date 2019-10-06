@@ -48,7 +48,13 @@
                         this.taskItems['name'] = response.title;
                         this.taskItems['desc'] = response.body;
                         this.reload()
-                    }, this)
+                    }, this).catch((error) => {
+                        vue.$swal({
+                            title: 'Problem with fetching the issues',
+                            text: error,
+                            type: 'error',
+                        });
+                    })
                 }
             },
             close(closeWindow) {
@@ -70,7 +76,21 @@
                             "state": this.taskItems.state
                         }
                     };
-                this.$store.dispatch("patchTasks", newTask).then(this.close(true))
+                let vue = this;
+                this.$store.dispatch("patchTasks", newTask).then(() => {
+                    this.close(true);
+                    vue.$swal({
+                        title: 'Success!',
+                        type: 'success',
+                    });
+                })
+                    .catch((error) => {
+                        vue.$swal({
+                            title: 'Problem with creating issues',
+                            text: error,
+                            type: 'error',
+                        });
+                    })
             },
             reload() {
                 this.reloadDom++
