@@ -6,16 +6,15 @@ export const state = {
     tasks: [],
     task: [],
     users: [],
-    githubToken: "",
-    externalBaseURL: process.env.VUE_APP_EXTERNAL_BASE_URL,
-    user: "eddremonts86",
     repos: [],
-    headers: {
-        Authorization: "token 58a52c8fba9bbaebb5a8dd13a03d58e6200bebc0",
-        Accept:"application/json, application/vnd.github.symmetra-preview+json , application/vnd.github.v3+json",
-        "Content-type": "application/json",
+    externalBaseURL: process.env.VUE_APP_EXTERNAL_BASE_URL,
+    user: process.env.VUE_APP_USER,
+   headers: {
+        Authorization: process.env.VUE_APP_AUTHORIZATION,
+        Accept:process.env.VUE_APP_ACCEPT,
+        "Content-type": process.env.VUE_APP_CONTENT_TYPE,
     },
-    auth: "access_token=dcf918dd77a0d68459426901a64241e50815ebfd"
+    auth: process.env.VUE_APP_AUTH
 };
 export const getters = {
     getTasks(state) {
