@@ -92,9 +92,6 @@ export const actions = {
         return Axios.patch(urlBase, parameters.obj, state.headers);
     },
     fetchRepos({state, commit}) {
-        let test = process.env
-        console.log(test.VUE_APP_EXTERNAL_BASE_URL)
-
         const urlBase = state.externalBaseURL + "/users/" + state.user + "/repos";
         Axios.get(urlBase).then(response => {
             commit("setRepos", response.data, state.headers);
