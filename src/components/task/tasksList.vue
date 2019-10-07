@@ -3,7 +3,7 @@
         <v-flex>
             <v-card>
                 <v-card-title class="_panel_border_bottom">
-                    <v-spacer>GIT - Issues List</v-spacer>
+                    <v-spacer>Issues List</v-spacer>
                     <taskCreator :parameters="repo"/>
                 </v-card-title>
                 <v-card-text class="pa-5">
@@ -102,28 +102,13 @@
                                                     edit
                                                 </v-icon>
                                             </v-btn>
-                                            <v-btn
-
-                                                    icon
-                                                    slot="activator" text
-                                            >
-                                                <v-icon>
-                                                    delete
-                                                </v-icon>
-                                            </v-btn>
-
-
                                         </td>
                                     </tr>
                                     </tbody>
-
                                 </template>
-
                             </v-data-table>
                         </v-card-text>
                     </v-card>
-
-
                 </v-card-text>
             </v-card>
         </v-flex>
@@ -188,11 +173,18 @@
                 this.$store.dispatch("fetchRepos");
             },
             reposChanges() {
+                let vue = this;
                 let parameters = {
                     repo: this.repo,
                     state: 'open'
                 };
-                this.$store.dispatch("fetchTasks", parameters);
+                this.$store.dispatch("fetchTasks", parameters).catch((error) => {
+                    vue.$swal({
+                        title: 'Problem with fetching issues',
+                        text: error,
+                        type: 'error',
+                    });
+                });
             },
             stop(generalTaskID, subTaskID, type) {
                 let vue = this;
@@ -201,6 +193,11 @@
                         response.data.endTask = new Date();
                         vue.$store.dispatch("putTasks", response.data)
                             .catch((error) => {
+                                vue.$swal({
+                                    title: 'Problem with creating the account',
+                                    text: error,
+                                    type: 'error',
+                                });
                             })
                             .finally(() => {
                                 vue.$store.dispatch("fetchTasks");
@@ -218,6 +215,11 @@
                             }
                         }
                         vue.$store.dispatch("putTasks", task).catch((error) => {
+                            vue.$swal({
+                                title: 'Problem with creating the account',
+                                text: error,
+                                type: 'error',
+                            });
                         }).finally(() => {
                             vue.$store.dispatch("fetchTasks");
                         })
@@ -225,75 +227,13 @@
                 }
                 return true;
             },
-            start(generalTaskID, subTaskID, type) {
-                let vue = this;
-                if (type == 'general') {
-                    this.$store.dispatch("fetchTasksByID", generalTaskID).then((response) => {
-                        response.data.startTask = new Date();
-                        vue.$store.dispatch("putTasks", response.data)
-                            .catch((error) => {
-                            })
-                            .finally(() => {
-                                vue.$store.dispatch("fetchTasks");
-                            })
-                    })
-                } else {
 
-                    this.$store.dispatch("fetchTasksByID", generalTaskID).then((response) => {
-                        let task = response.data;
-                        for (let i in task.subTasks) {
-                            let subTask = task.subTasks[i];
-                            if (subTaskID === subTask.id) {
-                                subTask.startTask = new Date();
-                                break;
-                            }
-                        }
-                        vue.$store.dispatch("putTasks", task).catch((error) => {
-                        }).finally(() => {
-                            vue.$store.dispatch("fetchTasks");
-                        })
-                    });
-                }
-                return true;
-            },
-            delete(generalTaskID, subTaskID, type) {
-                let vue = this;
-                if (type == 'general') {
-                    this.$store.dispatch("fetchTasksByID", generalTaskID).then((response) => {
-                        response.data.startTask = new Date();
-                        vue.$store.dispatch("putTasks", response.data)
-                            .catch((error) => {
-                            })
-                            .finally(() => {
-                                vue.$store.dispatch("fetchTasks");
-                            })
-                    })
-                } else {
-
-                    this.$store.dispatch("fetchTasksByID", generalTaskID).then((response) => {
-                        let task = response.data;
-                        for (let i in task.subTasks) {
-                            let subTask = task.subTasks[i];
-                            if (subTaskID === subTask.id) {
-                                subTask.startTask = new Date();
-                                break;
-                            }
-                        }
-                        vue.$store.dispatch("putTasks", task).catch((error) => {
-                        }).finally(() => {
-                            vue.$store.dispatch("fetchTasks");
-                        })
-                    });
-                }
-                return true;
-            },
             edit(number) {
                 this.editParameters['dialog'] = true;
                 this.editParameters['id'] = number;
                 this.editParameters['repo'] = this.repo;
                 this.editWindow++;
                 return true;
-
             },
             dateFormat(eventDate) {
                 let current_datetime = new Date(eventDate);
@@ -301,6 +241,7 @@
                 return formatted_date
             },
             getIssuse(state) {
+                let vue = this;
                 if (!this.opened && !this.closed && !this.all) {
                     this.reposChanges()
                 } else {
@@ -308,7 +249,13 @@
                         repo: this.repo,
                         state: state
                     };
-                    this.$store.dispatch("fetchTasks", parameters);
+                    this.$store.dispatch("fetchTasks", parameters).catch((error) => {
+                        vue.$swal({
+                            title: 'Problem with fetching issues',
+                            text: error,
+                            type: 'error',
+                        });
+                    });
                     this.shiwtcherCase(state)
                 }
                 return true

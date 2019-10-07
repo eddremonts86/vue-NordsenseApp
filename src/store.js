@@ -6,18 +6,15 @@ export const state = {
     tasks: [],
     task: [],
     users: [],
-    githubToken: "",
-    externalBaseURL: "https://api.github.com",
-    user: "eddremonts86",
     repos: [],
-    headers: {
-        Authorization: "token 58a52c8fba9bbaebb5a8dd13a03d58e6200bebc0",
-        "Content-type": "application/json",
-        "User-Agent": "eddremonts86",
-        Accept:
-            "application/json, " + "application/vnd.github.symmetra-preview+json"
+    externalBaseURL: process.env.VUE_APP_EXTERNAL_BASE_URL,
+    user: process.env.VUE_APP_USER,
+   headers: {
+        Authorization: process.env.VUE_APP_AUTHORIZATION,
+        Accept:process.env.VUE_APP_ACCEPT,
+        "Content-type": process.env.VUE_APP_CONTENT_TYPE,
     },
-    auth: "access_token=dcf918dd77a0d68459426901a64241e50815ebfd"
+    auth: process.env.VUE_APP_AUTH
 };
 export const getters = {
     getTasks(state) {
@@ -42,12 +39,6 @@ export const mutations = {
     },
     setTask(state, data) {
         state.task = data;
-    },
-    setUsers(state, data) {
-        state.users = data;
-    },
-    setGithubToken(state, data) {
-        state.githubToken = data;
     },
     setRepos(state, data) {
         state.repos = data;
@@ -101,6 +92,9 @@ export const actions = {
         return Axios.patch(urlBase, parameters.obj, state.headers);
     },
     fetchRepos({state, commit}) {
+        let test = process.env
+        console.log(test.VUE_APP_EXTERNAL_BASE_URL)
+
         const urlBase = state.externalBaseURL + "/users/" + state.user + "/repos";
         Axios.get(urlBase).then(response => {
             commit("setRepos", response.data, state.headers);
