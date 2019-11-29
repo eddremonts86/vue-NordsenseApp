@@ -1,4 +1,6 @@
-# NordSense
+![Screenshot](default.png)
+
+# Git task editor
 ```
 Small app to manage all Git Repository Issues.  
 ```
